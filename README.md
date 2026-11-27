@@ -4,25 +4,30 @@
 
 Tento projekt slouží k automatické instalaci monitorovacího systému **Zabbix 8.0 LTS** na virtuální server s operačním systémem **Debian 13**.
 
-Virtuální stroj je vytvářen pomocí nástroje Vagrant a poskytovatele VirtualBox. Instalace Zabbix serveru, databáze a agenta probíhá automaticky pomocí shell skriptů.
+Virtuální stroj je vytvářen pomocí nástroje Vagrant a poskytovatele VirtualBox. Instalace Zabbix serveru, databáze, webového rozhraní a agenta probíhá automaticky pomocí shell skriptů.
+
+Projekt obsahuje také export konfigurace hostitele `sposdk.cz` pro monitoring TLS/SSL certifikátu a obrazovou dokumentaci instalace.
 
 ## Použité technologie
 
 - Debian 13
 - Vagrant
-- VirtualBox
+- Oracle VirtualBox
 - Zabbix Server 8.0 LTS
 - Zabbix Agent 2
 - MariaDB
 - Apache
 - Bash
+- Git a GitHub
 
 ## Struktura projektu
 
 ```text
 .
 ├── Images/
-│   └── screenshoty projektu
+│   ├── zabbix-obrazek.png
+│   ├── screenshoty instalace a konfigurace
+│   └── screenshoty monitoringu
 ├── scripts/
 │   ├── install-zabbix-server.sh
 │   └── install-zabbix-agent2.sh
@@ -65,7 +70,7 @@ cd z4vod-osy-2026-zbx8-inst
 vagrant up
 ```
 
-Vagrant vytvoří virtuální stroj s Debianem 13 a spustí instalační skripty.
+Vagrant vytvoří virtuální stroj s Debianem 13 a automaticky spustí instalační skripty pro Zabbix Server a Zabbix Agent 2.
 
 ## Přístup k virtuálnímu stroji
 
@@ -106,7 +111,7 @@ Výchozí přihlašovací údaje Zabbixu:
 
 Po prvním přihlášení doporučuji změnit výchozí heslo.
 
-Název serveru nastavený v projektu:
+Vlastní název serveru nastavený v projektu:
 
 `z4vod - Zabbix 8.0`
 
@@ -132,7 +137,7 @@ Heslo databázového uživatele je generováno automaticky pomocí nástroje Ope
 
 Konfigurační soubor webového rozhraní `zabbix.conf.php` se vytváří automaticky uvnitř virtuálního stroje.
 
-Hesla nejsou součástí repozitáře.
+Citlivé údaje nejsou součástí repozitáře.
 
 ## Ověření běhu služeb
 
@@ -142,11 +147,29 @@ Stav hlavních služeb lze ověřit příkazem:
 sudo systemctl is-active zabbix-server apache2 mariadb zabbix-agent2
 ```
 
-Všechny služby by měly vrátit stav:
+Všechny čtyři služby by měly vrátit stav:
 
 ```text
 active
 ```
+
+## Monitoring hostitele sposdk.cz
+
+V adresáři `Zabbix/export/` jsou připraveny exporty konfigurace hostitele `sposdk.cz` ve formátech JSON, XML a YAML.
+
+Konfigurace je určena pro monitoring TLS/SSL certifikátu webové stránky:
+
+`https://sposdk.cz`
+
+Použitá skupina hostitelů:
+
+`Web Certificate`
+
+Použitá šablona:
+
+`Website certificate by Zabbix agent 2`
+
+Exporty slouží k přenosu konfigurace do Zabbixu.
 
 ## Řešení problémů při instalaci
 
@@ -158,14 +181,31 @@ Dále bylo potřeba opravit cestu k SQL schématu Zabbixu. Použitá cesta je:
 
 Import databázového schématu se provádí pouze v případě, že databáze ještě neobsahuje tabulky Zabbixu.
 
-## Screenshoty
+## Screenshoty a obrazová dokumentace
 
-V adresáři `Images/` budou umístěny screenshoty dokumentující:
+V adresáři `Images/` jsou uloženy vlastní obrázky a screenshoty dokumentující projekt.
 
+Obrazová dokumentace zahrnuje:
+
+- Vlastní obrázek související se Zabbixem.
 - Webové rozhraní Zabbixu s vlastním názvem serveru.
-- Dostupnost místního hosta a aktuální data agenta.
-- Monitoring TLS/SSL certifikátu `sposdk.cz`.
-- Ověření běhu jednotlivých služeb.
+- Konfiguraci a monitoring v Zabbixu.
+- Další screenshoty průběhu projektu.
+
+## Git a GitHub
+
+Projekt je verzován pomocí systému Git a uložen na GitHubu.
+
+Soubor `.gitignore` obsahuje pravidla pro ignorování lokálních a citlivých souborů:
+
+```gitignore
+.vagrant/
+*.log
+.env
+zabbix.conf.php
+```
+
+Složka `.vagrant/` obsahuje lokální data Vagrantu a není součástí GitHub repozitáře. Díky tomu se do repozitáře nenahrávají lokální data virtuálního stroje ani jeho konfigurace.
 
 ## Repozitář
 
