@@ -1,60 +1,174 @@
-# Samostatná práce: Instalace Zabbixu 8.0 LTS
+# Zabbix 8.0 LTS – automatická instalace pomocí Vagrantu
 
-![Titulní ilustrace s logy Zabbix, Vagrant a Debian nad virtuálním serverem](Images/zabbix-8-cover.png)
+## Popis projektu
 
-## Cíl
+Tento projekt slouží k automatické instalaci monitorovacího systému **Zabbix 8.0 LTS** na virtuální server s operačním systémem **Debian 13**.
 
-Připravte reprodukovatelnou instalaci **Zabbix serveru 8.0 LTS** ve virtuálním stroji **Debian 13**. Virtuální stroj vytvořte pomocí **Vagrantu** a instalaci proveďte **shell skriptem** spuštěným jako Vagrant provisioning. Pro databázi použijte **MariaDB**. Na stejný stroj nainstalujte také Zabbix Agent 2 a zpřístupněte webové rozhraní.
+Virtuální stroj je vytvářen pomocí nástroje Vagrant a poskytovatele VirtualBox. Instalace Zabbix serveru, databáze a agenta probíhá automaticky pomocí shell skriptů.
 
-Svůj studentský repozitář si vytvořte přes [odkaz k zadání v GitHub Classroom](https://osy.sposdk.cz/zadani/osy-2026-zbx8-inst). Výsledkem má být projekt, který lze spustit z čistého klonu příkazem `vagrant up`, bez ruční instalace balíčků uvnitř virtuálního stroje.
+## Použité technologie
 
-## 1. Virtuální stroj a automatizace
+- Debian 13
+- Vagrant
+- VirtualBox
+- Zabbix Server 8.0 LTS
+- Zabbix Agent 2
+- MariaDB
+- Apache
+- Bash
 
-- Vytvořte `Vagrantfile` pro Debian 13 (například box `bento/debian-13`) a VirtualBox. Nastavte alespoň 2 CPU a 2 GB RAM; při nedostatku paměti na hostiteli můžete po zdůvodnění v dokumentaci parametry upravit.
-- Nastavte hostname a přesměrování HTTP portu na `127.0.0.1` hostitelského počítače. SSH zpřístupněte přes `vagrant ssh`; případné vlastní přesměrování SSH omezte také na `127.0.0.1`.
-- Připojte jeden nebo více shell skriptů pomocí `config.vm.provision "shell"`. Skripty musí být součástí repozitáře a musí instalaci dokončit bez ručního spouštění příkazů ve VM.
-- Skript musí při chybě skončit nenulovým návratovým kódem. Opakované spuštění `vagrant provision` nesmí zničit existující databázi ani vyžadovat ruční opravu. Opakovatelnost scriptu není primárně nutná je jen výhodou. Nebude známkováno.
+## Struktura projektu
 
-## 2. Instalace Zabbixu
+```text
+.
+├── Images/
+│   └── screenshoty projektu
+├── scripts/
+│   ├── install-zabbix-server.sh
+│   └── install-zabbix-agent2.sh
+├── Zabbix/
+│   └── export/
+│       ├── sposdk.cz_hosts.json
+│       ├── sposdk.cz_hosts.xml
+│       └── sposdk.cz_hosts.yaml
+├── .gitignore
+├── Vagrantfile
+├── LICENSE
+└── README.md
+```
 
-Ve skriptu proveďte tyto kroky:
+## Požadavky
 
-1. Přidejte **oficiální repozitář Zabbix 8.0 pro Debian 13** a nainstalujte balíčky pro Zabbix server s databází MySQL/MariaDB, webové rozhraní, Apache, SQL schéma a Zabbix Agent 2. Nepoužívejte balíčky Zabbixu z výchozího repozitáře Debianu.
-2. Nainstalujte MariaDB, vytvořte databázi `zabbix` s kódováním `utf8mb4` a uživatele s přístupem pouze k této databázi. Počáteční schéma a data importujte právě jednou.
-3. Nastavte připojení Zabbix serveru a webového rozhraní k databázi. Hesla nesmějí být zveřejněna v README, snímcích obrazovky ani v historii Git. Popište, jak se při spuštění předávají nebo vytvářejí.
-4. Spusťte a povolte služby MariaDB, Zabbix server, Zabbix Agent 2 a Apache. Agenta nastavte tak, aby monitoroval místní server.
-5. Dokončete prvotní nastavení webového rozhraní. V jeho záhlaví nastavte vlastní rozpoznatelný název serveru, například své jméno nebo školní identifikátor. Instalujte do systému `zabbix.conf.php` a nakonfigurujte ho tak aby nebylo nutné ručně procházet PHP wizard.
+Před spuštěním projektu je potřeba mít nainstalováno:
 
-Při postupu vycházejte z [oficiální instalace Zabbixu](https://www.zabbix.com/download), [poznámek k balíčkům](https://www.zabbix.com/documentation/8.0/en/manual/installation/install/packages) a [požadavků Zabbixu 8.0](https://www.zabbix.com/documentation/8.0/en/manual/installation/requirements). Adresu a název instalačního balíčku repozitáře ověřte při práci podle aktuálního oficiálního návodu.
+- Oracle VM VirtualBox
+- Vagrant
+- Git (pro stažení projektu)
 
-## 3. Ověření monitorování
+## Spuštění projektu
 
-- Otevřete webové rozhraní z hostitelského počítače. Uveďte přesnou adresu a port ve svém README.
-- Přidejte místní Debian 13 jako hosta a přiřaďte vhodnou šablonu pro Zabbix Agent 2. V **Latest data** ukažte aktuální hodnoty z agenta.
-- Importujte hosta `sposdk.cz` z některého souboru v adresáři [`Zabbix/export`](Zabbix/export/) a ověřte v **Latest data** hodnoty pro TLS/SSL certifikát `https://sposdk.cz`. Pokud import staršího exportu vyžaduje úpravu pro Zabbix 8.0, změnu popište a upravený export odevzdejte.
-- Ověřte běh služeb příkazem `systemctl status` nebo `systemctl is-active`.
+1. Naklonování repozitáře:
 
-## 4. Odevzdání
+```bash
+git clone https://github.com/sposdknl/z4vod-osy-2026-zbx8-inst.git
+```
 
-Ve svém GitHub Classroom repozitáři odevzdejte:
+2. Přechod do složky projektu:
 
-- `Vagrantfile`, všechny provisioning skripty a případné konfigurační šablony;
-- vlastní `README.md` s předpoklady, příkazy pro spuštění (`vagrant up`, `vagrant ssh`, `vagrant provision`), adresou webu, postupem ověření a popisem řešení potíží, na které jste narazili;
-- snímky obrazovky v adresáři `Images/`: web s vaším názvem serveru, dostupný místní host a jeho aktuální data, monitoring certifikátu `sposdk.cz` a ověření běhu služeb;
-- odkaz na repozitář v Teams.
-- soubory zadání odstraňte a ponechte jen Vaši práci.
+```bash
+cd z4vod-osy-2026-zbx8-inst
+```
 
-Do repozitáře neukládejte `.vagrant/`, virtuální disk, hesla ani soubory s tajnými údaji. Před odevzdáním ověřte projekt z čistého klonu nebo po `vagrant destroy` a novém `vagrant up`.
+3. Vytvoření virtuálního stroje a automatická instalace:
 
-## Hodnocení (30 bodů)
+```bash
+vagrant up
+```
 
-| Kritérium | Body |
-| --- | ---: |
-| Funkční Vagrantfile s Debianem 13 a dostupným webem | 5 |
-| Automatická instalace Zabbixu 8.0 LTS, MariaDB a webového rozhraní | 10 |
-| Instalace agenta, místní host a aktuální data | 4 |
-| Monitoring TLS/SSL certifikátu `sposdk.cz` | 4 |
-| Opakovatelný provisioning a bezpečné zacházení s hesly | 3 |
-| Dokumentace a požadované snímky obrazovky | 4 |
+Vagrant vytvoří virtuální stroj s Debianem 13 a spustí instalační skripty.
 
-Soubory v adresáři [`Example`](Example/) zachycují starší řešení pro Zabbix 7.0. Nejsou hotovým řešením této práce; zejména jejich repozitář, parametry VM a práce s heslem nesplňují nové požadavky.
+## Přístup k virtuálnímu stroji
+
+Připojení přes SSH:
+
+```bash
+vagrant ssh
+```
+
+Opětovné spuštění provisioningu:
+
+```bash
+vagrant provision
+```
+
+Zastavení virtuálního stroje:
+
+```bash
+vagrant halt
+```
+
+Odstranění virtuálního stroje:
+
+```bash
+vagrant destroy
+```
+
+## Přístup k webovému rozhraní
+
+Po dokončení instalace je Zabbix dostupný v internetovém prohlížeči na adrese:
+
+**http://localhost:8080**
+
+Výchozí přihlašovací údaje Zabbixu:
+
+- Uživatelské jméno: `Admin`
+- Heslo: `zabbix`
+
+Po prvním přihlášení doporučuji změnit výchozí heslo.
+
+Název serveru nastavený v projektu:
+
+`z4vod - Zabbix 8.0`
+
+## Síťová konfigurace
+
+Virtuální stroj používá následující přesměrování portů:
+
+| Služba | Port virtuálního stroje | Port hostitele |
+|---|---:|---:|
+| SSH | 22 | 2206 |
+| HTTP | 80 | 8080 |
+| Zabbix Server | 10051 | 10051 |
+
+Porty hostitele jsou navázány na adresu `127.0.0.1`.
+
+## Databáze a zabezpečení hesel
+
+Pro ukládání dat se používá MariaDB a databáze `zabbix`.
+
+Heslo databázového uživatele je generováno automaticky pomocí nástroje OpenSSL. Heslo se ukládá uvnitř virtuálního stroje do souboru:
+
+`/root/.zabbix-db-password`
+
+Konfigurační soubor webového rozhraní `zabbix.conf.php` se vytváří automaticky uvnitř virtuálního stroje.
+
+Hesla nejsou součástí repozitáře.
+
+## Ověření běhu služeb
+
+Stav hlavních služeb lze ověřit příkazem:
+
+```bash
+sudo systemctl is-active zabbix-server apache2 mariadb zabbix-agent2
+```
+
+Všechny služby by měly vrátit stav:
+
+```text
+active
+```
+
+## Řešení problémů při instalaci
+
+Během instalace bylo potřeba vyřešit konfiguraci GRUB, která při aktualizaci Debianu vyžadovala výběr zařízení pro instalaci zavaděče. V projektu je proto před aktualizací systému automaticky nastaven disk `/dev/sda`.
+
+Dále bylo potřeba opravit cestu k SQL schématu Zabbixu. Použitá cesta je:
+
+`/usr/share/zabbix/sql-scripts/mysql/server.sql.gz`
+
+Import databázového schématu se provádí pouze v případě, že databáze ještě neobsahuje tabulky Zabbixu.
+
+## Screenshoty
+
+V adresáři `Images/` budou umístěny screenshoty dokumentující:
+
+- Webové rozhraní Zabbixu s vlastním názvem serveru.
+- Dostupnost místního hosta a aktuální data agenta.
+- Monitoring TLS/SSL certifikátu `sposdk.cz`.
+- Ověření běhu jednotlivých služeb.
+
+## Repozitář
+
+Zdrojové soubory projektu jsou dostupné na GitHubu:
+
+https://github.com/sposdknl/z4vod-osy-2026-zbx8-inst
